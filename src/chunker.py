@@ -7,7 +7,11 @@ def chunk_pages(pages, chunk_size=500):
         for i in range(0, len(text), chunk_size):
             chunk = text[i:i + chunk_size]
 
+            if not chunk.strip():
+                continue
+
             chunks.append({
+                "document": page["document"],
                 "page": page["page"],
                 "text": chunk
             })

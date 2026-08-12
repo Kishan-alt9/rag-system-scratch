@@ -4,7 +4,14 @@ from pydantic import BaseModel
 from pathlib import Path
 import shutil
 
-from src.indexer import load_chunks, load_index, load_metadata, index_pdf
+from src.indexer import (
+    DuplicateDocumentError,
+    get_document_filename,
+    load_chunks,
+    load_index,
+    load_metadata,
+    index_pdf
+)
 from src.pipeline import RAGPipeline
 
 
@@ -75,7 +82,7 @@ def get_documents():
     try:
         metadata = load_metadata()
         chunks = load_chunks()
-        doc_names = metadata.get("documents", [])
+        documents_metadata = metadata.get("documents", [])
         
         doc_chunks = {}
         for chunk in chunks:
@@ -83,7 +90,20 @@ def get_documents():
             doc_chunks[doc_name] = doc_chunks.get(doc_name, 0) + 1
 
         documents = []
-        for name in doc_names:
+        for document in documents_metadata:
+            name = get_document_filename(document)
+
+            if isinstance(document, dict):
+                documents.append({
+                    "id": document.get("id"),
+                    "name": name,
+                    "filename": name,
+                    "page_count": document.get("page_count", 0),
+                    "chunks": document.get("chunk_count", doc_chunks.get(name, 0)),
+                    "status": document.get("status", "indexed")
+                })
+                continue
+
             documents.append({
                 "name": name,
                 "chunks": doc_chunks.get(name, 0),
@@ -122,5 +142,7 @@ async def upload_document(file: UploadFile = File(...)):
         index_pdf(file_path)
         reload_pipeline()
         return {"message": f"Successfully indexed {file.filename}", "filename": file.filename}
+    except DuplicateDocumentError as e:
+        raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to index document: {str(e)}")

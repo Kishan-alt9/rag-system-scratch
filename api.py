@@ -3,14 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pathlib import Path
 import shutil
+import uuid
 
 from src.indexer import (
     DuplicateDocumentError,
+    DocumentNotFoundError,
     get_document_filename,
     load_chunks,
     load_index,
     load_metadata,
-    index_pdf
+    index_pdf,
+    delete_document,
+    reindex_document
 )
 from src.pipeline import RAGPipeline
 
@@ -146,3 +150,40 @@ async def upload_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to index document: {str(e)}")
+
+
+@app.delete("/documents/{document_id}")
+def delete_document_endpoint(document_id: str):
+    try:
+        delete_document(document_id)
+        reload_pipeline()
+        return {"message": f"Deleted document {document_id}"}
+    except DocumentNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete document: {str(e)}")
+
+
+@app.post("/documents/{document_id}/reindex")
+async def reindex_document_endpoint(document_id: str, file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    upload_dir = Path("data/raw")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # save to a unique temp filename so we don't collide with existing file names
+    unique_name = f"reindex-{uuid.uuid4().hex}-{file.filename}"
+    file_path = upload_dir / unique_name
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        reindex_document(document_id, file_path)
+        reload_pipeline()
+        return {"message": f"Reindexed document {document_id}", "filename": unique_name}
+    except DocumentNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reindex document: {str(e)}")

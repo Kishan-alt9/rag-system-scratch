@@ -1,37 +1,53 @@
 import React from 'react';
-import { FileText, CheckCircle2 } from 'lucide-react';
+import { FileText, CheckCircle2, Loader2 } from 'lucide-react';
+import { DocumentActionMenu } from './DocumentActionMenu';
 
-export const DocumentItem = ({ document, isSelected, onSelect }) => {
+export const DocumentItem = ({
+  document,
+  isSelected,
+  onSelect,
+  onViewDetails,
+  onReindex,
+  onDelete,
+  loadingAction
+}) => {
   const { name, pages, chunks, status = 'indexed' } = document;
+  const isMutating = !!loadingAction;
 
   return (
     <div
-      onClick={() => onSelect && onSelect(name)}
-      className={`card card-interactive`}
+      onClick={() => !isMutating && onSelect && onSelect(name)}
+      className={`card ${isMutating ? '' : 'card-interactive'}`}
       style={{
         padding: '12px 14px',
         marginBottom: '8px',
         backgroundColor: isSelected ? 'var(--bg-accent-subtle)' : 'var(--bg-card)',
         borderColor: isSelected ? 'var(--border-focus)' : 'var(--border-subtle)',
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         gap: '12px',
-        userSelect: 'none'
+        userSelect: 'none',
+        opacity: isMutating ? 0.7 : 1,
+        cursor: isMutating ? 'not-allowed' : 'pointer'
       }}
     >
       <div style={{
         width: '32px',
         height: '32px',
         borderRadius: 'var(--radius-sm)',
-        background: 'rgba(239, 68, 68, 0.1)',
-        border: '1px solid rgba(239, 68, 68, 0.2)',
+        background: isMutating ? 'rgba(59, 130, 246, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+        border: `1px solid ${isMutating ? 'rgba(59, 130, 246, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        color: '#f87171'
+        color: isMutating ? 'var(--text-accent)' : '#f87171'
       }}>
-        <FileText style={{ width: '18px', height: '18px' }} />
+        {isMutating ? (
+          <Loader2 className="animate-spin" style={{ width: '18px', height: '18px' }} />
+        ) : (
+          <FileText style={{ width: '18px', height: '18px' }} />
+        )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -60,20 +76,40 @@ export const DocumentItem = ({ document, isSelected, onSelect }) => {
             <span>{chunks} {chunks === 1 ? 'chunk' : 'chunks'}</span>
           ) : null}
 
-          {status === 'indexed' && (
+          {isMutating ? (
             <span style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '3px',
-              color: 'var(--text-success)',
+              color: 'var(--text-accent)',
               fontWeight: 500
             }}>
-              <CheckCircle2 style={{ width: '12px', height: '12px' }} />
-              Indexed
+              {loadingAction === 'deleting' ? 'Deleting...' : 'Re-indexing...'}
             </span>
+          ) : (
+            status === 'indexed' && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                color: 'var(--text-success)',
+                fontWeight: 500
+              }}>
+                <CheckCircle2 style={{ width: '12px', height: '12px' }} />
+                Indexed
+              </span>
+            )
           )}
         </div>
       </div>
+
+      {!isMutating && (
+        <DocumentActionMenu
+          document={document}
+          onViewDetails={onViewDetails}
+          onReindex={onReindex}
+          onDelete={onDelete}
+        />
+      )}
     </div>
   );
 };

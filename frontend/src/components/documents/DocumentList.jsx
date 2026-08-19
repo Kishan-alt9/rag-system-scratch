@@ -2,7 +2,16 @@ import React from 'react';
 import { Plus, FileCheck } from 'lucide-react';
 import { DocumentItem } from './DocumentItem';
 
-export const DocumentList = ({ documents = [], selectedDoc, onSelectDoc, onAddClick }) => {
+export const DocumentList = ({
+  documents = [],
+  selectedDoc,
+  onSelectDoc,
+  onAddClick,
+  onViewDetails,
+  onReindex,
+  onDelete,
+  operationLoading
+}) => {
   return (
     <div style={{ padding: '16px 20px', flex: 1, overflowY: 'auto' }}>
       {/* Header & Add Button */}
@@ -74,6 +83,10 @@ export const DocumentList = ({ documents = [], selectedDoc, onSelectDoc, onAddCl
               document={doc}
               isSelected={selectedDoc === doc.name}
               onSelect={onSelectDoc}
+              onViewDetails={onViewDetails}
+              onReindex={onReindex}
+              onDelete={onDelete}
+              loadingAction={operationLoading && operationLoading.docName === doc.name ? operationLoading.type : null}
             />
           ))
         )}

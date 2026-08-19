@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ArrowRight, FileText } from 'lucide-react';
+import { Sparkles, ArrowRight, FileText, AlertCircle } from 'lucide-react';
 
 const SAMPLE_PROMPTS = [
   "What is the subject of this report?",
@@ -8,7 +8,7 @@ const SAMPLE_PROMPTS = [
   "What are the main recommendations?"
 ];
 
-export const EmptyState = ({ onSelectPrompt }) => {
+export const EmptyState = ({ onSelectPrompt, apiOffline }) => {
   return (
     <div style={{
       maxWidth: '680px',
@@ -16,6 +16,29 @@ export const EmptyState = ({ onSelectPrompt }) => {
       padding: '40px 20px',
       textAlign: 'center'
     }}>
+      {/* If API is offline */}
+      {apiOffline && (
+        <div style={{
+          padding: '16px 20px',
+          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+          border: '1px solid rgba(239, 68, 68, 0.2)',
+          borderRadius: 'var(--radius-md)',
+          color: 'var(--text-error)',
+          textAlign: 'center',
+          marginBottom: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <AlertCircle style={{ width: '28px', height: '28px', opacity: 0.8 }} />
+          <div style={{ fontWeight: 600, fontSize: '14px' }}>RAG Backend Unreachable</div>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto', lineHeight: '1.5' }}>
+            The workspace cannot communicate with the FastAPI server. Please check that your backend is running at http://127.0.0.1:8000 and CORS is enabled.
+          </p>
+        </div>
+      )}
+
       {/* Icon Badge */}
       <div style={{
         width: '56px',

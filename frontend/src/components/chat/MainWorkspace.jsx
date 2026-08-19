@@ -2,7 +2,7 @@ import React from 'react';
 import { EmptyState } from './EmptyState';
 import { ChatWindow } from './ChatWindow';
 import { QuestionInput } from './QuestionInput';
-import { Trash2, FileText, Sparkles, Menu } from 'lucide-react';
+import { Trash2, FileText, Sparkles, Menu, AlertCircle, X } from 'lucide-react';
 
 export const MainWorkspace = ({
   messages = [],
@@ -12,7 +12,10 @@ export const MainWorkspace = ({
   onClearHistory,
   onSelectPrompt,
   selectedDocName,
-  onToggleSidebar
+  onToggleSidebar,
+  operationError,
+  onDismissOperationError,
+  isConnected
 }) => {
   return (
     <main style={{
@@ -94,8 +97,35 @@ export const MainWorkspace = ({
         display: 'flex',
         flexDirection: 'column'
       }}>
+        {operationError && (
+          <div style={{
+            padding: '12px 20px',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderBottom: '1px solid rgba(239, 68, 68, 0.2)',
+            color: 'var(--text-error)',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexShrink: 0
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+              <span>{operationError}</span>
+            </div>
+            <button
+              onClick={onDismissOperationError}
+              style={{ color: 'var(--text-tertiary)', padding: '2px', display: 'flex', alignItems: 'center' }}
+              title="Dismiss error"
+            >
+              <X style={{ width: '16px', height: '16px' }} />
+            </button>
+          </div>
+        )}
+
         {messages.length === 0 ? (
-          <EmptyState onSelectPrompt={onSelectPrompt} />
+          <EmptyState onSelectPrompt={onSelectPrompt} apiOffline={!isConnected} />
         ) : (
           <ChatWindow messages={messages} isLoading={isLoading} error={error} />
         )}

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export class ApiError extends Error {
   constructor(message, status = 500) {
@@ -42,14 +42,8 @@ export const api = {
       }
       return await response.json();
     } catch (err) {
-      // Fallback response for offline or missing endpoint
-      return {
-        status: 'ready',
-        document_count: 1,
-        chunk_count: 63,
-        documents: ['sample.pdf'],
-        isFallback: true,
-      };
+      if (err instanceof ApiError) throw err;
+      throw new ApiError('Failed to fetch status: RAG backend offline or unreachable', 503);
     }
   },
 
@@ -64,14 +58,8 @@ export const api = {
       }
       return await response.json();
     } catch (err) {
-      // Default fallback state if server is loading
-      return {
-        documents: [
-          { name: 'sample.pdf', pages: 15, chunks: 63, status: 'indexed' }
-        ],
-        total_chunks: 63,
-        isFallback: true,
-      };
+      if (err instanceof ApiError) throw err;
+      throw new ApiError('Failed to fetch documents: RAG backend offline or unreachable', 503);
     }
   },
 
@@ -107,7 +95,7 @@ export const api = {
       return data;
     } catch (err) {
       if (err instanceof ApiError) throw err;
-      throw new ApiError('Unable to connect to RAG backend. Make sure FastAPI server is running at http://127.0.0.1:8000.', 503);
+      throw new ApiError('Unable to connect to RAG backend. Make sure FastAPI server is running at ' + API_BASE_URL, 503);
     }
   },
 
@@ -143,6 +131,70 @@ export const api = {
     } catch (err) {
       if (err instanceof ApiError) throw err;
       throw new ApiError('Failed to upload file to server.', 503);
+    }
+  },
+
+  /**
+   * Delete document by ID
+   * @param {string} documentId
+   */
+  async deleteDocument(documentId) {
+    if (!documentId) throw new ApiError('No document ID provided', 400);
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents/${encodeURIComponent(documentId)}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        let errorDetail = 'Failed to delete document';
+        try {
+          const errorJson = await response.json();
+          if (errorJson.detail) errorDetail = errorJson.detail;
+        } catch (_) {}
+        throw new ApiError(errorDetail, response.status);
+      }
+
+      return await response.json();
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      throw new ApiError('Failed to delete document from server.', 503);
+    }
+  },
+
+  /**
+   * Reindex an existing document with a replacement PDF file
+   * @param {string} documentId
+   * @param {File} file
+   */
+  async reindexDocument(documentId, file) {
+    if (!documentId) throw new ApiError('No document ID provided', 400);
+    if (!file) throw new ApiError('No file provided', 400);
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      throw new ApiError('Only PDF files are supported', 400);
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents/${encodeURIComponent(documentId)}/reindex`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorDetail = 'Re-index failed';
+        try {
+          const errorJson = await response.json();
+          if (errorJson.detail) errorDetail = errorJson.detail;
+        } catch (_) {}
+        throw new ApiError(errorDetail, response.status);
+      }
+
+      return await response.json();
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      throw new ApiError('Failed to re-index document on server.', 503);
     }
   }
 };

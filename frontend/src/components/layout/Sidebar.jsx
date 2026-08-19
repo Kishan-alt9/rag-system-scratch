@@ -2,6 +2,7 @@ import React from 'react';
 import { Branding } from './Branding';
 import { DocumentList } from '../documents/DocumentList';
 import { IndexStatus } from '../documents/IndexStatus';
+import { ThreadList } from './ThreadList';
 
 export const Sidebar = ({
   isConnected,
@@ -10,7 +11,11 @@ export const Sidebar = ({
   onSelectDoc,
   onAddClick,
   totalChunks,
-  documentCount
+  documentCount,
+  onViewDetails,
+  onReindex,
+  onDelete,
+  operationLoading
 }) => {
   return (
     <aside style={{
@@ -29,7 +34,13 @@ export const Sidebar = ({
         selectedDoc={selectedDoc}
         onSelectDoc={onSelectDoc}
         onAddClick={onAddClick}
+        onViewDetails={onViewDetails}
+        onReindex={onReindex}
+        onDelete={onDelete}
+        operationLoading={operationLoading}
       />
+
+      <ThreadList currentThreadCount={0} />
 
       <IndexStatus
         totalChunks={totalChunks}

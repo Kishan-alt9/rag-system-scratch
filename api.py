@@ -36,6 +36,7 @@ app.add_middleware(
 
 class QuestionRequest(BaseModel):
     question: str
+    conversation_id: str | None = None
 
 
 def reload_pipeline():
@@ -126,8 +127,17 @@ def ask_question(request: QuestionRequest):
         except Exception:
             raise HTTPException(status_code=500, detail="RAG Pipeline is not initialized or index missing.")
 
-    result = app.state.pipeline.ask(request.question)
+    result = app.state.pipeline.ask(request.question, request.conversation_id)
     return result
+
+
+@app.delete("/conversations/{conversation_id}")
+def reset_conversation(conversation_id: str):
+    if not hasattr(app.state, "pipeline") or app.state.pipeline is None:
+        raise HTTPException(status_code=500, detail="RAG Pipeline is not initialized or index missing.")
+
+    app.state.pipeline.reset_conversation(conversation_id)
+    return {"conversation_id": conversation_id, "message": "Conversation reset"}
 
 
 @app.post("/upload")

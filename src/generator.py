@@ -1,9 +1,12 @@
 from ollama import chat
+import os
 import re
 
 
 _CITATION_PATTERN = re.compile(r"\[(S\d+)\]")
 _NO_ANSWER = "I couldn't find the answer in the provided document."
+_DEFAULT_LLM_MODEL = "qwen3:8b"
+LLM_MODEL = os.getenv("RAG_LLM_MODEL", _DEFAULT_LLM_MODEL).strip() or _DEFAULT_LLM_MODEL
 
 
 def extract_citation_ids(answer):
@@ -22,7 +25,7 @@ def validate_citations(answer, source_ids):
     }
 
 
-def generate_answer(query, results):
+def generate_answer(query, results, conversation_history=None):
     print("Generating answer...")
 
     context_blocks = []
@@ -35,6 +38,15 @@ def generate_answer(query, results):
         )
 
     context = "\n\n".join(context_blocks)
+    history_context = "\n\n".join(
+        f"User: {turn['question']}\nAssistant: {turn['answer']}"
+        for turn in (conversation_history or [])
+    )
+    history_section = (
+        f"Conversation history (use for reference resolution only; cite current context only):\n{history_context}\n\n"
+        if history_context
+        else ""
+    )
 
     prompt = f"""
 You are a helpful AI assistant.
@@ -47,7 +59,7 @@ rename citation markers.
 If the answer is not present in the context, reply:
 "{_NO_ANSWER}"
 
-Context:
+{history_section}Context:
 {context}
 
 Question:
@@ -55,7 +67,8 @@ Question:
 """
 
     response = chat(
-        model="llama3.2",
+        model=LLM_MODEL,
+        think=False,
         messages=[
             {
                 "role": "user",

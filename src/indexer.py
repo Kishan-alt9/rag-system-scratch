@@ -17,6 +17,23 @@ METADATA_PATH = STORAGE_DIR / "metadata.json"
 DEFAULT_PDF_PATH = Path("data/raw/sample.pdf")
 
 
+def _ensure_chunk_ids(chunks):
+    page_chunk_indices = {}
+    normalized_chunks = []
+
+    for chunk in chunks:
+        normalized_chunk = dict(chunk)
+        key = (normalized_chunk.get("document"), normalized_chunk.get("page"))
+        chunk_index = page_chunk_indices.get(key, 0)
+        normalized_chunk["chunk_id"] = (
+            f"{normalized_chunk.get('document')}:{normalized_chunk.get('page')}:{chunk_index}"
+        )
+        page_chunk_indices[key] = chunk_index + 1
+        normalized_chunks.append(normalized_chunk)
+
+    return normalized_chunks
+
+
 class DuplicateDocumentError(ValueError):
     pass
 
@@ -40,7 +57,7 @@ def save_chunks(chunks, tmp=False):
     path = CHUNKS_PATH.with_suffix(CHUNKS_PATH.suffix + ".tmp") if tmp else CHUNKS_PATH
 
     with open(path, "wb") as file:
-        pickle.dump(chunks, file)
+        pickle.dump(_ensure_chunk_ids(chunks), file)
 
 
 def load_chunks():
@@ -48,7 +65,7 @@ def load_chunks():
         return []
 
     with open(CHUNKS_PATH, "rb") as file:
-        return pickle.load(file)
+        return _ensure_chunk_ids(pickle.load(file))
 
 
 def save_embeddings(embeddings, tmp=False):
@@ -280,7 +297,7 @@ def index_pdf(pdf_path=DEFAULT_PDF_PATH):
             raise ValueError("Existing embeddings missing; cannot safely append without embeddings.pkl or reconstruct support.")
         final_embeddings = np.vstack([existing_embeddings, new_embeddings]) if new_embeddings.size else existing_embeddings
 
-    chunks = existing_chunks + new_chunks
+    chunks = _ensure_chunk_ids(existing_chunks + new_chunks)
     documents.append({
         "id": file_hash,
         "filename": pdf_path.name,
@@ -350,7 +367,7 @@ def delete_document(document_id):
     filename = target["filename"]
 
     # compute retained chunks and embeddings
-    retained_chunks = [c for c in chunks if c.get("document") != filename]
+    retained_chunks = _ensure_chunk_ids([c for c in chunks if c.get("document") != filename])
     retained_indices = [i for i, c in enumerate(chunks) if c.get("document") != filename]
 
     if embeddings is not None:
@@ -458,7 +475,7 @@ def reindex_document(document_id, pdf_path):
     new_embeddings = _embedding_matrix(new_chunks) if new_chunks else np.empty((0, 0), dtype="float32")
 
     # combine
-    final_chunks = retained_chunks + new_chunks
+    final_chunks = _ensure_chunk_ids(retained_chunks + new_chunks)
 
     if retained_embeddings is None and retained_chunks:
         raise ValueError("Cannot rebuild FAISS: embeddings missing for retained chunks.")

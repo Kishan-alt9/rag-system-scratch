@@ -1,111 +1,144 @@
 import React from 'react';
-import { Sparkles, ArrowRight, FileText, AlertCircle } from 'lucide-react';
+import { DocStack3D } from './DocStack3D';
+import { ArrowRight, FileText, AlertCircle, Sparkles, BookOpen, Layers, Compass } from 'lucide-react';
 
 const SAMPLE_PROMPTS = [
-  "What is the subject of this report?",
-  "Summarize the key findings.",
-  "Who are the authors?",
-  "What are the main recommendations?"
+  {
+    icon: Sparkles,
+    title: "Summarize Core Concepts",
+    desc: "Extract key definitions and architectural highlights"
+  },
+  {
+    icon: BookOpen,
+    title: "Query Technical Details",
+    desc: "Ask specific questions across indexed documents"
+  },
+  {
+    icon: Layers,
+    title: "Inspect Retrieved Evidence",
+    desc: "Verify passages and page numbers for answers"
+  },
+  {
+    icon: Compass,
+    title: "Explore Knowledge Base",
+    desc: "Discover concepts mapped across all indexed chunks"
+  }
 ];
 
 export const EmptyState = ({ onSelectPrompt, apiOffline }) => {
   return (
     <div style={{
-      maxWidth: '680px',
+      maxWidth: '720px',
       margin: 'auto',
-      padding: '40px 20px',
+      padding: '30px 20px',
       textAlign: 'center'
-    }}>
+    }} className="animate-fade-in">
       {/* If API is offline */}
       {apiOffline && (
         <div style={{
-          padding: '16px 20px',
-          backgroundColor: 'rgba(239, 68, 68, 0.08)',
-          border: '1px solid rgba(239, 68, 68, 0.2)',
+          padding: '14px 18px',
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
           borderRadius: 'var(--radius-md)',
           color: 'var(--text-error)',
           textAlign: 'center',
           marginBottom: '24px',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          gap: '8px'
+          justifyContent: 'center',
+          gap: '10px'
         }}>
-          <AlertCircle style={{ width: '28px', height: '28px', opacity: 0.8 }} />
-          <div style={{ fontWeight: 600, fontSize: '14px' }}>RAG Backend Unreachable</div>
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto', lineHeight: '1.5' }}>
-            The workspace cannot communicate with the FastAPI server. Please check that your backend is running at http://127.0.0.1:8000 and CORS is enabled.
-          </p>
+          <AlertCircle style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+          <div style={{ fontWeight: 600, fontSize: '13px' }}>
+            FastAPI Server Offline — Make sure backend is running at http://127.0.0.1:8000
+          </div>
         </div>
       )}
 
-      {/* Icon Badge */}
-      <div style={{
-        width: '56px',
-        height: '56px',
-        borderRadius: 'var(--radius-lg)',
-        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.05) 100%)',
-        border: '1px solid rgba(59, 130, 246, 0.2)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        margin: '0 auto 20px auto',
-        color: 'var(--text-accent)'
-      }}>
-        <Sparkles style={{ width: '28px', height: '28px' }} />
-      </div>
+      {/* 3D Visual Document Stack */}
+      <DocStack3D />
 
-      {/* Main Title */}
+      {/* Oversized Modern Typography */}
       <h2 style={{
-        fontSize: '28px',
-        fontWeight: 700,
+        fontSize: '32px',
+        fontWeight: 800,
         color: 'var(--text-primary)',
-        letterSpacing: '-0.02em',
-        marginBottom: '10px'
+        letterSpacing: '-0.03em',
+        lineHeight: 1.2,
+        marginBottom: '12px'
       }}>
-        Ask your documents.
+        Research with <span style={{
+          background: 'var(--accent-gradient)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>Grounded Intelligence</span>
       </h2>
 
       {/* Subtext */}
       <p style={{
         fontSize: '15px',
         color: 'var(--text-secondary)',
-        maxWidth: '480px',
+        maxWidth: '520px',
         margin: '0 auto 36px auto',
-        lineHeight: '1.6'
+        lineHeight: '1.6',
+        fontWeight: 400
       }}>
-        Upload your PDFs and ask questions using verified information from your document library.
+        Query your indexed documents to extract verified answers, inspect source evidence, and trace exact page citations.
       </p>
 
       {/* Suggestion Prompts Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '12px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '14px',
         textAlign: 'left'
       }}>
-        {SAMPLE_PROMPTS.map((prompt, idx) => (
-          <div
-            key={idx}
-            onClick={() => onSelectPrompt && onSelectPrompt(prompt)}
-            className="card card-interactive"
-            style={{
-              padding: '14px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '12px'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FileText style={{ width: '16px', height: '16px', color: 'var(--text-accent)', flexShrink: 0 }} />
-              <span style={{ fontSize: '13.5px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                {prompt}
-              </span>
+        {SAMPLE_PROMPTS.map((prompt, idx) => {
+          const IconComp = prompt.icon;
+          return (
+            <div
+              key={idx}
+              onClick={() => onSelectPrompt && onSelectPrompt(prompt.title)}
+              className="card card-interactive card-3d"
+              style={{
+                padding: '16px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '14px',
+                borderRadius: 'var(--radius-lg)',
+                backgroundColor: '#ffffff',
+                border: '1px solid var(--border-subtle)',
+                boxShadow: 'var(--shadow-card)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: idx % 2 === 0 ? 'var(--bg-accent-subtle)' : 'var(--bg-purple-subtle)',
+                  color: idx % 2 === 0 ? 'var(--text-accent)' : 'var(--text-purple)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <IconComp style={{ width: '18px', height: '18px' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                    {prompt.title}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+                    {prompt.desc}
+                  </div>
+                </div>
+              </div>
+              <ArrowRight style={{ width: '16px', height: '16px', color: 'var(--text-tertiary)', flexShrink: 0 }} />
             </div>
-            <ArrowRight style={{ width: '14px', height: '14px', color: 'var(--text-tertiary)', flexShrink: 0 }} />
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

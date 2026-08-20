@@ -1,8 +1,7 @@
 import React from 'react';
-import { Branding } from './Branding';
 import { DocumentList } from '../documents/DocumentList';
 import { IndexStatus } from '../documents/IndexStatus';
-import { ThreadList } from './ThreadList';
+import { BookOpen } from 'lucide-react';
 
 export const Sidebar = ({
   isConnected,
@@ -19,15 +18,33 @@ export const Sidebar = ({
 }) => {
   return (
     <aside style={{
-      width: '280px',
+      width: '290px',
       height: '100%',
-      backgroundColor: 'var(--bg-sidebar)',
-      borderRight: '1px solid var(--border-subtle)',
+      backgroundColor: '#ffffff',
+      borderRadius: 'var(--radius-xl)',
+      border: '1px solid var(--border-subtle)',
+      boxShadow: 'var(--shadow-floating)',
       display: 'flex',
       flexDirection: 'column',
-      flexShrink: 0
+      flexShrink: 0,
+      overflow: 'hidden'
     }}>
-      <Branding isConnected={isConnected} />
+      {/* Knowledge Library Title */}
+      <div style={{
+        height: '54px',
+        padding: '0 20px',
+        borderBottom: '1px solid var(--border-subtle)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        backgroundColor: '#ffffff',
+        flexShrink: 0
+      }}>
+        <BookOpen style={{ width: '16px', height: '16px', color: 'var(--text-accent)' }} />
+        <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+          Knowledge Library
+        </span>
+      </div>
 
       <DocumentList
         documents={documents}
@@ -39,8 +56,6 @@ export const Sidebar = ({
         onDelete={onDelete}
         operationLoading={operationLoading}
       />
-
-      <ThreadList currentThreadCount={0} />
 
       <IndexStatus
         totalChunks={totalChunks}

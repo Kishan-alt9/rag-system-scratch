@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppShell } from './components/layout/AppShell';
+import { TopNavbar } from './components/layout/TopNavbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { MainWorkspace } from './components/chat/MainWorkspace';
 import { UploadModal } from './components/documents/UploadModal';
 import { DocumentDetailsModal } from './components/documents/DocumentDetailsModal';
+import { ContextualReader } from './components/layout/ContextualReader';
 import { api } from './services/api';
 
 export function App() {
@@ -27,6 +29,26 @@ export function App() {
 
   const reindexInputRef = useRef(null);
   const [reindexTarget, setReindexTarget] = useState(null);
+
+  // Citation & right-pane reader state
+  const [activeMessageIndex, setActiveMessageIndex] = useState(null);
+  const [selectedCitationIndex, setSelectedCitationIndex] = useState(null);
+
+  // Sync citation focus to the latest turn when messages list updates
+  useEffect(() => {
+    if (messages.length > 0) {
+      setActiveMessageIndex(messages.length - 1);
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.sources && lastMsg.sources.length > 0) {
+        setSelectedCitationIndex(0);
+      } else {
+        setSelectedCitationIndex(null);
+      }
+    } else {
+      setActiveMessageIndex(null);
+      setSelectedCitationIndex(null);
+    }
+  }, [messages.length]);
 
   // Fetch backend connection status & documents on mount and periodically
   const refreshBackendData = async () => {
@@ -154,34 +176,70 @@ export function App() {
     }
   };
 
+  // Handle Citation/Source Selection Highlight
+  const handleSelectSource = (msgIndex, citationIndex) => {
+    setActiveMessageIndex(msgIndex);
+    setSelectedCitationIndex(citationIndex);
+  };
+
+  const currentActiveSources = activeMessageIndex !== null && messages[activeMessageIndex]
+    ? messages[activeMessageIndex].sources || []
+    : [];
+
   return (
     <AppShell>
-      <Sidebar
+      {/* Top Floating Navigation Bar */}
+      <TopNavbar
         isConnected={isConnected}
-        documents={documents}
-        selectedDoc={selectedDoc}
-        onSelectDoc={(name) => setSelectedDoc(selectedDoc === name ? null : name)}
-        onAddClick={() => setIsUploadOpen(true)}
         totalChunks={statusInfo.total_chunks}
         documentCount={statusInfo.document_count}
-        onViewDetails={(doc) => setDetailsDoc(doc)}
-        onReindex={handleReindexClick}
-        onDelete={handleDeleteClick}
-        operationLoading={operationLoading}
+        onAddClick={() => setIsUploadOpen(true)}
       />
 
-      <MainWorkspace
-        messages={messages}
-        isLoading={isLoading}
-        error={error}
-        onAskQuestion={handleAskQuestion}
-        onClearHistory={() => setMessages([])}
-        onSelectPrompt={handleAskQuestion}
-        selectedDocName={selectedDoc}
-        operationError={operationError}
-        onDismissOperationError={() => setOperationError(null)}
-        isConnected={isConnected}
-      />
+      {/* Floating 3-Island Layout */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        gap: '14px',
+        overflow: 'hidden',
+        minHeight: 0
+      }}>
+        <Sidebar
+          isConnected={isConnected}
+          documents={documents}
+          selectedDoc={selectedDoc}
+          onSelectDoc={(name) => setSelectedDoc(selectedDoc === name ? null : name)}
+          onAddClick={() => setIsUploadOpen(true)}
+          totalChunks={statusInfo.total_chunks}
+          documentCount={statusInfo.document_count}
+          onViewDetails={(doc) => setDetailsDoc(doc)}
+          onReindex={handleReindexClick}
+          onDelete={handleDeleteClick}
+          operationLoading={operationLoading}
+        />
+
+        <MainWorkspace
+          messages={messages}
+          isLoading={isLoading}
+          error={error}
+          onAskQuestion={handleAskQuestion}
+          onClearHistory={() => setMessages([])}
+          onSelectPrompt={handleAskQuestion}
+          selectedDocName={selectedDoc}
+          operationError={operationError}
+          onDismissOperationError={() => setOperationError(null)}
+          isConnected={isConnected}
+          activeMessageIndex={activeMessageIndex}
+          selectedCitationIndex={selectedCitationIndex}
+          onSelectSource={handleSelectSource}
+        />
+
+        <ContextualReader
+          activeSources={currentActiveSources}
+          selectedCitationIndex={selectedCitationIndex}
+          onSelectCitation={(citationIndex) => handleSelectSource(activeMessageIndex, citationIndex)}
+        />
+      </div>
 
       <UploadModal
         isOpen={isUploadOpen}

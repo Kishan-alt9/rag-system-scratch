@@ -2,7 +2,7 @@ import React from 'react';
 import { SourceCard } from './SourceCard';
 import { Bookmark } from 'lucide-react';
 
-export const SourceList = ({ sources = [] }) => {
+export const SourceList = ({ sources = [], selectedCitationIndex = null, onSelectSource }) => {
   if (!sources || sources.length === 0) return null;
 
   return (
@@ -24,7 +24,13 @@ export const SourceList = ({ sources = [] }) => {
 
       <div>
         {sources.map((src, idx) => (
-          <SourceCard key={idx} source={src} />
+          <SourceCard
+            key={idx}
+            source={src}
+            index={idx}
+            isSelected={selectedCitationIndex === idx}
+            onSelect={onSelectSource}
+          />
         ))}
       </div>
     </div>

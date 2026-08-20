@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, Circle } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 export const Branding = ({ isConnected = true }) => {
   return (
@@ -7,55 +7,59 @@ export const Branding = ({ isConnected = true }) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '16px 20px',
-      borderBottom: '1px solid var(--border-subtle)'
+      height: '56px',
+      padding: '0 20px',
+      borderBottom: '1px solid var(--border-subtle)',
+      backgroundColor: 'var(--bg-app)',
+      flexShrink: 0
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{
-          width: '32px',
-          height: '32px',
+          width: '30px',
+          height: '30px',
           borderRadius: 'var(--radius-sm)',
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-          border: '1px solid var(--border-medium)',
+          background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)',
+          border: '1px solid var(--border-accent)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'content',
+          justifyContent: 'center',
           color: 'var(--text-accent)'
         }}>
-          <Layers style={{ width: '18px', height: '18px', margin: 'auto' }} />
+          <Layers style={{ width: '16px', height: '16px' }} />
         </div>
         <div>
-          <h1 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
             RAG Workspace
           </h1>
-          <span style={{ fontSize: '11px', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Doc Intelligence
+          <span style={{ fontSize: '10.5px', color: 'var(--text-tertiary)', fontWeight: 500, letterSpacing: '0.02em' }}>
+            Research Intelligence
           </span>
         </div>
       </div>
 
       <div 
-        title={isConnected ? 'Backend API Connected' : 'Backend API Offline'}
+        title={isConnected ? 'Backend API Online' : 'Backend API Offline'}
         style={{
-          display: 'flex',
+          display: 'inline-flex',
           alignItems: 'center',
-          gap: '6px',
-          fontSize: '12px',
+          gap: '5px',
+          fontSize: '11px',
           fontWeight: 500,
           color: isConnected ? 'var(--text-success)' : 'var(--text-error)',
-          padding: '4px 8px',
+          padding: '2px 8px',
           borderRadius: 'var(--radius-sm)',
-          background: isConnected ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-          border: `1px solid ${isConnected ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+          backgroundColor: isConnected ? 'rgba(52, 211, 153, 0.08)' : 'rgba(248, 113, 113, 0.08)',
+          border: `1px solid ${isConnected ? 'rgba(52, 211, 153, 0.2)' : 'rgba(248, 113, 113, 0.2)'}`
         }}
       >
-        <Circle style={{
-          width: '7px',
-          height: '7px',
-          fill: 'currentColor',
-          stroke: 'none'
+        <span style={{
+          width: '6px',
+          height: '6px',
+          borderRadius: '50%',
+          backgroundColor: isConnected ? 'var(--text-success)' : 'var(--text-error)',
+          display: 'inline-block'
         }} />
-        <span>{isConnected ? 'Connected' : 'Offline'}</span>
+        <span>{isConnected ? 'Ready' : 'Offline'}</span>
       </div>
     </div>
   );

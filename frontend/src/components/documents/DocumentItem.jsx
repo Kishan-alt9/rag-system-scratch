@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, CheckCircle2, Loader2 } from 'lucide-react';
+import { FileText, Check, Loader2 } from 'lucide-react';
 import { DocumentActionMenu } from './DocumentActionMenu';
 
 export const DocumentItem = ({
@@ -17,9 +17,9 @@ export const DocumentItem = ({
   return (
     <div
       onClick={() => !isMutating && onSelect && onSelect(name)}
-      className={`card ${isMutating ? '' : 'card-interactive'}`}
+      className={`card perspective-card ${isMutating ? '' : 'card-interactive'}`}
       style={{
-        padding: '12px 14px',
+        padding: '11px 13px',
         marginBottom: '8px',
         backgroundColor: isSelected ? 'var(--bg-accent-subtle)' : 'var(--bg-card)',
         borderColor: isSelected ? 'var(--border-focus)' : 'var(--border-subtle)',
@@ -27,7 +27,7 @@ export const DocumentItem = ({
         alignItems: 'center',
         gap: '12px',
         userSelect: 'none',
-        opacity: isMutating ? 0.7 : 1,
+        opacity: isMutating ? 0.6 : 1,
         cursor: isMutating ? 'not-allowed' : 'pointer'
       }}
     >
@@ -35,18 +35,18 @@ export const DocumentItem = ({
         width: '32px',
         height: '32px',
         borderRadius: 'var(--radius-sm)',
-        background: isMutating ? 'rgba(59, 130, 246, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-        border: `1px solid ${isMutating ? 'rgba(59, 130, 246, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+        backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'rgba(56, 189, 248, 0.08)',
+        border: '1px solid rgba(56, 189, 248, 0.2)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        color: isMutating ? 'var(--text-accent)' : '#f87171'
+        color: 'var(--text-accent)'
       }}>
         {isMutating ? (
-          <Loader2 className="animate-spin" style={{ width: '18px', height: '18px' }} />
+          <Loader2 className="animate-spin" style={{ width: '16px', height: '16px' }} />
         ) : (
-          <FileText style={{ width: '18px', height: '18px' }} />
+          <FileText style={{ width: '16px', height: '16px' }} />
         )}
       </div>
 
@@ -66,7 +66,7 @@ export const DocumentItem = ({
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          marginTop: '4px',
+          marginTop: '3px',
           fontSize: '11px',
           color: 'var(--text-tertiary)'
         }}>
@@ -94,7 +94,7 @@ export const DocumentItem = ({
                 color: 'var(--text-success)',
                 fontWeight: 500
               }}>
-                <CheckCircle2 style={{ width: '12px', height: '12px' }} />
+                <Check style={{ width: '11px', height: '11px' }} />
                 Indexed
               </span>
             )

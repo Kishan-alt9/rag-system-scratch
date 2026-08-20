@@ -15,7 +15,10 @@ export const MainWorkspace = ({
   onToggleSidebar,
   operationError,
   onDismissOperationError,
-  isConnected
+  isConnected,
+  activeMessageIndex,
+  selectedCitationIndex,
+  onSelectSource
 }) => {
   return (
     <main style={{
@@ -23,20 +26,24 @@ export const MainWorkspace = ({
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: 'var(--bg-app)',
+      backgroundColor: '#ffffff',
+      borderRadius: 'var(--radius-2xl)',
+      border: '1px solid var(--border-subtle)',
+      boxShadow: 'var(--shadow-floating)',
       overflow: 'hidden',
       position: 'relative'
     }}>
-      {/* Top Header Bar */}
+      {/* Top Header Bar inside Main Workspace */}
       <header style={{
-        height: '56px',
-        padding: '0 20px',
+        height: '54px',
+        padding: '0 24px',
         borderBottom: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexShrink: 0,
-        backgroundColor: 'var(--bg-app)'
+        backgroundColor: '#ffffff',
+        zIndex: 10
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {onToggleSidebar && (
@@ -50,19 +57,20 @@ export const MainWorkspace = ({
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
             <Sparkles style={{ width: '15px', height: '15px', color: 'var(--text-accent)' }} />
-            <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
-              Document Intelligence Mode
+            <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '13.5px' }}>
+              Research Workspace
             </span>
             {selectedDocName && (
               <span style={{
                 fontSize: '11px',
-                padding: '2px 8px',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
-                color: 'var(--text-accent)'
+                padding: '2px 10px',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--bg-accent-subtle)',
+                border: '1px solid var(--border-accent)',
+                color: 'var(--text-accent)',
+                fontWeight: 600
               }}>
-                Scope: {selectedDocName}
+                Scoped: {selectedDocName}
               </span>
             )}
           </div>
@@ -95,7 +103,8 @@ export const MainWorkspace = ({
         flex: 1,
         overflowY: 'auto',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        zIndex: 10
       }}>
         {operationError && (
           <div style={{
@@ -127,7 +136,14 @@ export const MainWorkspace = ({
         {messages.length === 0 ? (
           <EmptyState onSelectPrompt={onSelectPrompt} apiOffline={!isConnected} />
         ) : (
-          <ChatWindow messages={messages} isLoading={isLoading} error={error} />
+          <ChatWindow
+            messages={messages}
+            isLoading={isLoading}
+            error={error}
+            activeMessageIndex={activeMessageIndex}
+            selectedCitationIndex={selectedCitationIndex}
+            onSelectSource={onSelectSource}
+          />
         )}
       </div>
 
@@ -136,7 +152,8 @@ export const MainWorkspace = ({
         padding: '16px 20px 24px 20px',
         backgroundColor: 'var(--bg-app)',
         borderTop: '1px solid var(--border-subtle)',
-        flexShrink: 0
+        flexShrink: 0,
+        zIndex: 10
       }}>
         <QuestionInput
           onSubmit={onAskQuestion}

@@ -36,32 +36,38 @@ export const QuestionInput = ({ onSubmit, isLoading, disabled, placeholder }) =>
       onSubmit={handleSubmit}
       style={{
         width: '100%',
-        maxWidth: '760px',
+        maxWidth: '720px',
         margin: '0 auto',
         position: 'relative'
       }}
     >
       <div style={{
         position: 'relative',
-        backgroundColor: 'var(--bg-input)',
-        border: '1px solid var(--border-medium)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '12px 14px 12px 16px',
-        boxShadow: 'var(--shadow-elevated)',
+        backgroundColor: '#ffffff',
+        border: '1px solid #cbd5e1',
+        borderRadius: '26px',
+        padding: '10px 12px 10px 20px',
+        boxShadow: '0 16px 36px -8px rgba(37, 99, 235, 0.1), 0 2px 10px rgba(0, 0, 0, 0.04)',
         display: 'flex',
         alignItems: 'flex-end',
-        gap: '10px',
+        gap: '12px',
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
       }}
-      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--border-focus)'}
-      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-medium)'}
+      onFocus={(e) => {
+        e.currentTarget.style.borderColor = '#3b82f6';
+        e.currentTarget.style.boxShadow = '0 20px 45px -8px rgba(37, 99, 235, 0.18), 0 0 0 3px rgba(59, 130, 246, 0.15)';
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.borderColor = '#cbd5e1';
+        e.currentTarget.style.boxShadow = '0 16px 36px -8px rgba(37, 99, 235, 0.1), 0 2px 10px rgba(0, 0, 0, 0.04)';
+      }}
       >
         <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || 'Ask anything about your documents...'}
+          placeholder={placeholder || 'Ask any question across your document knowledge base...'}
           disabled={isLoading || disabled}
           rows={1}
           style={{
@@ -75,7 +81,7 @@ export const QuestionInput = ({ onSubmit, isLoading, disabled, placeholder }) =>
             fontFamily: 'var(--font-sans)',
             resize: 'none',
             maxHeight: '180px',
-            padding: '2px 0'
+            padding: '6px 0'
           }}
         />
 
@@ -83,23 +89,24 @@ export const QuestionInput = ({ onSubmit, isLoading, disabled, placeholder }) =>
           type="submit"
           disabled={!value.trim() || isLoading || disabled}
           style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: !value.trim() || isLoading || disabled ? 'rgba(255, 255, 255, 0.05)' : 'var(--accent-primary)',
-            color: !value.trim() || isLoading || disabled ? 'var(--text-tertiary)' : '#ffffff',
+            width: '38px',
+            height: '38px',
+            borderRadius: '50%',
+            background: !value.trim() || isLoading || disabled ? '#e2e8f0' : 'var(--accent-gradient)',
+            color: !value.trim() || isLoading || disabled ? '#94a3b8' : '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
             transition: 'all 0.2s ease',
-            cursor: !value.trim() || isLoading || disabled ? 'not-allowed' : 'pointer'
+            cursor: !value.trim() || isLoading || disabled ? 'not-allowed' : 'pointer',
+            boxShadow: !value.trim() || isLoading || disabled ? 'none' : '0 4px 12px rgba(37, 99, 235, 0.3)'
           }}
         >
           {isLoading ? (
-            <Loader2 className="animate-spin" style={{ width: '18px', height: '18px' }} />
+            <Loader2 className="animate-spin" style={{ width: '16px', height: '16px' }} />
           ) : (
-            <ArrowUp style={{ width: '18px', height: '18px' }} />
+            <ArrowUp style={{ width: '17px', height: '17px', strokeWidth: 2.5 }} />
           )}
         </button>
       </div>
@@ -107,12 +114,12 @@ export const QuestionInput = ({ onSubmit, isLoading, disabled, placeholder }) =>
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'between',
-        padding: '6px 8px 0 8px',
-        fontSize: '11px',
+        justifyContent: 'center',
+        padding: '8px 12px 0 12px',
+        fontSize: '11.5px',
         color: 'var(--text-tertiary)'
       }}>
-        <span>Press <kbd style={{ fontFamily: 'var(--font-mono)', padding: '1px 4px', borderRadius: '3px', background: 'rgba(255,255,255,0.06)' }}>Enter</kbd> to submit, <kbd style={{ fontFamily: 'var(--font-mono)', padding: '1px 4px', borderRadius: '3px', background: 'rgba(255,255,255,0.06)' }}>Shift + Enter</kbd> for new line</span>
+        <span>Press <kbd style={{ fontFamily: 'var(--font-mono)', padding: '1px 6px', borderRadius: '4px', background: '#e2e8f0', color: '#475569', fontWeight: 600 }}>Enter</kbd> to generate answer with verified citations</span>
       </div>
     </form>
   );

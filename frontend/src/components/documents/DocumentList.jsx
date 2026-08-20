@@ -37,13 +37,13 @@ export const DocumentList = ({
         onClick={onAddClick}
         style={{
           width: '100%',
-          padding: '10px 14px',
-          marginBottom: '16px',
+          padding: '9px 14px',
+          marginBottom: '14px',
           borderRadius: 'var(--radius-md)',
-          backgroundColor: 'rgba(59, 130, 246, 0.08)',
-          border: '1px dashed rgba(59, 130, 246, 0.3)',
+          backgroundColor: 'rgba(56, 189, 248, 0.06)',
+          border: '1px dashed rgba(56, 189, 248, 0.28)',
           color: 'var(--text-accent)',
-          fontSize: '13px',
+          fontSize: '12.5px',
           fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
@@ -52,15 +52,15 @@ export const DocumentList = ({
           transition: 'all 0.2s ease'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
-          e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+          e.currentTarget.style.backgroundColor = 'rgba(56, 189, 248, 0.12)';
+          e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.45)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.08)';
-          e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+          e.currentTarget.style.backgroundColor = 'rgba(56, 189, 248, 0.06)';
+          e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.28)';
         }}
       >
-        <Plus style={{ width: '16px', height: '16px' }} />
+        <Plus style={{ width: '15px', height: '15px' }} />
         <span>+ Add documents</span>
       </button>
 

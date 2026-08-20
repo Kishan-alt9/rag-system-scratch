@@ -349,14 +349,15 @@ export const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
             style={{
               padding: '8px 18px',
               fontSize: '13px',
-              fontWeight: 500,
-              color: '#ffffff',
-              backgroundColor: selectedFiles.length === 0 || uploadState === 'uploading' ? 'var(--border-medium)' : 'var(--accent-primary)',
+              fontWeight: 600,
+              color: selectedFiles.length === 0 || uploadState === 'uploading' ? 'var(--text-tertiary)' : '#080b12',
+              backgroundColor: selectedFiles.length === 0 || uploadState === 'uploading' ? 'rgba(255, 255, 255, 0.05)' : 'var(--accent-primary)',
               borderRadius: 'var(--radius-sm)',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              cursor: selectedFiles.length === 0 || uploadState === 'uploading' ? 'not-allowed' : 'pointer'
+              cursor: selectedFiles.length === 0 || uploadState === 'uploading' ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease'
             }}
           >
             {uploadState === 'uploading' && <Loader2 className="animate-spin" style={{ width: '14px', height: '14px' }} />}

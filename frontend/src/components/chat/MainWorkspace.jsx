@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { EmptyState } from './EmptyState';
 import { ChatWindow } from './ChatWindow';
 import { QuestionInput } from './QuestionInput';
-import { Trash2, FileText, Sparkles, Menu, AlertCircle, X } from 'lucide-react';
+import { Trash2, Sparkles, AlertCircle, X, RefreshCw } from 'lucide-react';
 
 export const MainWorkspace = ({
   messages = [],
@@ -12,14 +12,22 @@ export const MainWorkspace = ({
   onClearHistory,
   onSelectPrompt,
   selectedDocName,
-  onToggleSidebar,
   operationError,
   onDismissOperationError,
   isConnected,
-  activeMessageIndex,
-  selectedCitationIndex,
-  onSelectSource
+  onCitationClick
 }) => {
+  // Manage controlled input state for pre-filling capability
+  const [inputValue, setInputValue] = useState('');
+
+  const handleSelectPrompt = (promptText) => {
+    // Pre-fill the input field but do not automatically submit (as requested)
+    setInputValue(promptText);
+    if (onSelectPrompt) {
+      onSelectPrompt(promptText);
+    }
+  };
+
   return (
     <main style={{
       flex: 1,
@@ -27,15 +35,15 @@ export const MainWorkspace = ({
       display: 'flex',
       flexDirection: 'column',
       backgroundColor: '#ffffff',
-      borderRadius: 'var(--radius-2xl)',
+      borderRadius: 'var(--radius-xl)',
       border: '1px solid var(--border-subtle)',
-      boxShadow: 'var(--shadow-floating)',
+      boxShadow: 'var(--shadow-card)',
       overflow: 'hidden',
       position: 'relative'
     }}>
-      {/* Top Header Bar inside Main Workspace */}
+      {/* Top Workspace Header Bar */}
       <header style={{
-        height: '54px',
+        height: '56px',
         padding: '0 24px',
         borderBottom: '1px solid var(--border-subtle)',
         display: 'flex',
@@ -46,28 +54,19 @@ export const MainWorkspace = ({
         zIndex: 10
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {onToggleSidebar && (
-            <button
-              onClick={onToggleSidebar}
-              style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
-            >
-              <Menu style={{ width: '20px', height: '20px' }} />
-            </button>
-          )}
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-            <Sparkles style={{ width: '15px', height: '15px', color: 'var(--text-accent)' }} />
+            <Sparkles style={{ width: '14px', height: '14px', color: 'var(--accent-indigo)' }} />
             <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '13.5px' }}>
               Research Workspace
             </span>
             {selectedDocName && (
               <span style={{
-                fontSize: '11px',
-                padding: '2px 10px',
+                fontSize: '10px',
+                padding: '2px 8px',
                 borderRadius: 'var(--radius-full)',
-                backgroundColor: 'var(--bg-accent-subtle)',
-                border: '1px solid var(--border-accent)',
-                color: 'var(--text-accent)',
+                backgroundColor: 'var(--accent-bg-subtle)',
+                border: '1px solid rgba(99, 102, 241, 0.15)',
+                color: 'var(--accent-indigo)',
                 fontWeight: 600
               }}>
                 Scoped: {selectedDocName}
@@ -76,29 +75,34 @@ export const MainWorkspace = ({
           </div>
         </div>
 
-        {messages.length > 0 && (
-          <button
-            onClick={onClearHistory}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              color: 'var(--text-tertiary)',
-              padding: '6px 10px',
-              borderRadius: 'var(--radius-sm)',
-              backgroundColor: 'transparent',
-              transition: 'color 0.2s ease'
-            }}
-            title="Clear Chat History"
-          >
-            <Trash2 style={{ width: '14px', height: '14px' }} />
-            <span>Clear conversation</span>
-          </button>
-        )}
+        {/* Clear and Actions Row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {messages.length > 0 && (
+            <button
+              onClick={onClearHistory}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                color: 'var(--text-tertiary)',
+                padding: '6px 10px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'transparent',
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}
+              title="Clear Chat History"
+            >
+              <Trash2 style={{ width: '13px', height: '13px' }} />
+              <span>Clear conversation</span>
+            </button>
+          )}
+        </div>
       </header>
 
-      {/* Main Workspace Body */}
+      {/* Main Chat/Empty Workspace Panel */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -108,49 +112,46 @@ export const MainWorkspace = ({
       }}>
         {operationError && (
           <div style={{
-            padding: '12px 20px',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            borderBottom: '1px solid rgba(239, 68, 68, 0.2)',
+            padding: '10px 20px',
+            backgroundColor: 'rgba(244, 63, 94, 0.05)',
+            borderBottom: '1px solid rgba(244, 63, 94, 0.1)',
             color: 'var(--text-error)',
-            fontSize: '13px',
+            fontSize: '12.5px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '12px',
             flexShrink: 0
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <AlertCircle style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <AlertCircle style={{ width: '15px', height: '15px', flexShrink: 0 }} />
               <span>{operationError}</span>
             </div>
             <button
               onClick={onDismissOperationError}
               style={{ color: 'var(--text-tertiary)', padding: '2px', display: 'flex', alignItems: 'center' }}
-              title="Dismiss error"
             >
-              <X style={{ width: '16px', height: '16px' }} />
+              <X style={{ width: '14px', height: '14px' }} />
             </button>
           </div>
         )}
 
         {messages.length === 0 ? (
-          <EmptyState onSelectPrompt={onSelectPrompt} apiOffline={!isConnected} />
+          <EmptyState onSelectPrompt={handleSelectPrompt} apiOffline={!isConnected} />
         ) : (
           <ChatWindow
             messages={messages}
             isLoading={isLoading}
             error={error}
-            activeMessageIndex={activeMessageIndex}
-            selectedCitationIndex={selectedCitationIndex}
-            onSelectSource={onSelectSource}
+            onCitationClick={onCitationClick}
           />
         )}
       </div>
 
-      {/* Bottom Fixed Question Input Container */}
+      {/* Bottom Floating Question Input Container */}
       <div style={{
-        padding: '16px 20px 24px 20px',
-        backgroundColor: 'var(--bg-app)',
+        padding: '16px 24px 24px 24px',
+        backgroundColor: '#ffffff',
         borderTop: '1px solid var(--border-subtle)',
         flexShrink: 0,
         zIndex: 10
@@ -158,8 +159,12 @@ export const MainWorkspace = ({
         <QuestionInput
           onSubmit={onAskQuestion}
           isLoading={isLoading}
+          value={inputValue}
+          onChange={setInputValue}
         />
       </div>
     </main>
   );
 };
+
+export default MainWorkspace;

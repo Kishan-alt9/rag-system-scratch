@@ -1,32 +1,30 @@
 import React from 'react';
-import { User, Bot } from 'lucide-react';
-import { AnswerCard } from './AnswerCard';
-import { SourceList } from '../sources/SourceList';
+import { User, Sparkles } from 'lucide-react';
+import { AnswerEditorial } from './AnswerEditorial';
 
 export const Message = ({
   question,
   answer,
   sources,
-  isLast,
+  noSourcesFound,
   msgIndex,
-  selectedCitationIndex = null,
-  onSelectSource
+  onCitationClick
 }) => {
   return (
-    <div style={{ marginBottom: '28px' }} className="animate-fade-in">
+    <div style={{ marginBottom: '32px' }} className="animate-fade-in">
       {/* User Question */}
       <div style={{
         display: 'flex',
         alignItems: 'flex-start',
         gap: '12px',
-        marginBottom: '16px'
+        marginBottom: '20px'
       }}>
         <div style={{
-          width: '30px',
-          height: '30px',
+          width: '32px',
+          height: '32px',
           borderRadius: '50%',
-          backgroundColor: 'rgba(255, 255, 255, 0.04)',
-          border: '1px solid var(--border-medium)',
+          backgroundColor: '#f8fafc',
+          border: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -38,25 +36,19 @@ export const Message = ({
 
         <div style={{ flex: 1 }}>
           <div style={{
-            fontSize: '10.5px',
-            fontWeight: 700,
+            fontSize: '10px',
+            fontWeight: 800,
             color: 'var(--text-tertiary)',
             marginBottom: '4px',
             fontFamily: 'var(--font-mono)',
-            letterSpacing: '0.04em'
+            letterSpacing: '0.06em'
           }}>
-            YOU
+            QUESTION
           </div>
           <div style={{
-            fontSize: '14px',
-            fontWeight: 500,
+            fontSize: '14.5px',
+            fontWeight: 600,
             color: 'var(--text-primary)',
-            backgroundColor: 'rgba(255, 255, 255, 0.025)',
-            padding: '10px 14px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-subtle)',
-            display: 'inline-block',
-            maxWidth: '100%',
             lineHeight: '1.5'
           }}>
             {question}
@@ -71,41 +63,43 @@ export const Message = ({
         gap: '12px'
       }}>
         <div style={{
-          width: '30px',
-          height: '30px',
+          width: '32px',
+          height: '32px',
           borderRadius: '50%',
-          backgroundColor: 'rgba(56, 189, 248, 0.1)',
-          border: '1px solid var(--border-accent)',
+          background: 'var(--accent-glow-gradient)',
+          border: '1px solid rgba(99, 102, 241, 0.2)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--text-accent)',
+          color: 'var(--accent-indigo)',
           flexShrink: 0
         }}>
-          <Bot style={{ width: '16px', height: '16px' }} />
+          <Sparkles style={{ width: '14px', height: '14px' }} />
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: '10.5px',
-            fontWeight: 700,
+            fontSize: '10px',
+            fontWeight: 800,
             color: 'var(--text-tertiary)',
             marginBottom: '4px',
             fontFamily: 'var(--font-mono)',
-            letterSpacing: '0.04em'
+            letterSpacing: '0.06em'
           }}>
-            RAG ASSISTANT
+            ANSWER
           </div>
 
-          <AnswerCard answer={answer} />
-
-          <SourceList
+          <AnswerEditorial
+            answer={answer}
             sources={sources}
-            selectedCitationIndex={selectedCitationIndex}
-            onSelectSource={(citationIndex) => onSelectSource && onSelectSource(msgIndex, citationIndex)}
+            noSourcesFound={noSourcesFound}
+            onCitationClick={onCitationClick}
+            msgIndex={msgIndex}
           />
         </div>
       </div>
     </div>
   );
 };
+
+export default Message;

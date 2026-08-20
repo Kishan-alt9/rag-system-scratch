@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppShell } from './components/layout/AppShell';
-import { TopNavbar } from './components/layout/TopNavbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { MainWorkspace } from './components/chat/MainWorkspace';
 import { UploadModal } from './components/documents/UploadModal';
 import { DocumentDetailsModal } from './components/documents/DocumentDetailsModal';
-import { ContextualReader } from './components/layout/ContextualReader';
+import { CitationPopover } from './components/chat/CitationPopover';
 import { api } from './services/api';
 
 export function App() {
@@ -30,25 +29,15 @@ export function App() {
   const reindexInputRef = useRef(null);
   const [reindexTarget, setReindexTarget] = useState(null);
 
-  // Citation & right-pane reader state
-  const [activeMessageIndex, setActiveMessageIndex] = useState(null);
-  const [selectedCitationIndex, setSelectedCitationIndex] = useState(null);
+  // Absolute citation popover state: { messageIndex, citationId, rect, source }
+  const [activeCitationPopover, setActiveCitationPopover] = useState(null);
 
-  // Sync citation focus to the latest turn when messages list updates
+  // Close popover when clicking anywhere else
   useEffect(() => {
-    if (messages.length > 0) {
-      setActiveMessageIndex(messages.length - 1);
-      const lastMsg = messages[messages.length - 1];
-      if (lastMsg.sources && lastMsg.sources.length > 0) {
-        setSelectedCitationIndex(0);
-      } else {
-        setSelectedCitationIndex(null);
-      }
-    } else {
-      setActiveMessageIndex(null);
-      setSelectedCitationIndex(null);
-    }
-  }, [messages.length]);
+    const handleClose = () => setActiveCitationPopover(null);
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, []);
 
   // Fetch backend connection status & documents on mount and periodically
   const refreshBackendData = async () => {
@@ -90,16 +79,24 @@ export function App() {
   const handleAskQuestion = async (questionText) => {
     if (!questionText.trim()) return;
 
+    setActiveCitationPopover(null); // Clear any active popover
     setError(null);
     setIsLoading(true);
 
     try {
       const response = await api.askQuestion(questionText);
       
+      // Determine if the answer indicates failure/missing answer
+      const answerText = response.answer || "";
+      const isNoAnswer = answerText.toLowerCase().includes("couldn't find the answer") ||
+                         answerText.toLowerCase().includes("could not find the answer") ||
+                         answerText === "I couldn't find the answer in the provided document.";
+
       const newTurn = {
         question: questionText,
-        answer: response.answer,
-        sources: response.sources || []
+        answer: isNoAnswer ? "I couldn't find the answer in the provided document." : answerText,
+        sources: isNoAnswer ? [] : (response.sources || []),
+        noSourcesFound: isNoAnswer
       };
 
       setMessages((prev) => [...prev, newTurn]);
@@ -176,70 +173,74 @@ export function App() {
     }
   };
 
-  // Handle Citation/Source Selection Highlight
-  const handleSelectSource = (msgIndex, citationIndex) => {
-    setActiveMessageIndex(msgIndex);
-    setSelectedCitationIndex(citationIndex);
-  };
+  // Handle Click on Inline Citation Badge
+  const handleCitationClick = (msgIndex, citationId, elementRect) => {
+    const turn = messages[msgIndex];
+    if (!turn || !turn.sources) return;
 
-  const currentActiveSources = activeMessageIndex !== null && messages[activeMessageIndex]
-    ? messages[activeMessageIndex].sources || []
-    : [];
+    // Use backend citation_id as source of truth
+    const matchedSource = turn.sources.find(src => 
+      String(src.citation_id).toUpperCase() === String(citationId).toUpperCase() ||
+      String(src.citation_id).toUpperCase() === `S${citationId}`.toUpperCase()
+    );
+
+    if (matchedSource) {
+      setActiveCitationPopover({
+        messageIndex: msgIndex,
+        citationId,
+        rect: elementRect,
+        source: matchedSource
+      });
+    }
+  };
 
   return (
     <AppShell>
-      {/* Top Floating Navigation Bar */}
-      <TopNavbar
+      {/* Two-Pane Layout */}
+      <Sidebar
         isConnected={isConnected}
+        documents={documents}
+        selectedDoc={selectedDoc}
+        onSelectDoc={(name) => setSelectedDoc(selectedDoc === name ? null : name)}
+        onAddClick={() => setIsUploadOpen(true)}
         totalChunks={statusInfo.total_chunks}
         documentCount={statusInfo.document_count}
-        onAddClick={() => setIsUploadOpen(true)}
+        onViewDetails={(doc) => setDetailsDoc(doc)}
+        onReindex={handleReindexClick}
+        onDelete={handleDeleteClick}
+        operationLoading={operationLoading}
       />
 
-      {/* Floating 3-Island Layout */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        gap: '14px',
-        overflow: 'hidden',
-        minHeight: 0
-      }}>
-        <Sidebar
-          isConnected={isConnected}
-          documents={documents}
-          selectedDoc={selectedDoc}
-          onSelectDoc={(name) => setSelectedDoc(selectedDoc === name ? null : name)}
-          onAddClick={() => setIsUploadOpen(true)}
-          totalChunks={statusInfo.total_chunks}
-          documentCount={statusInfo.document_count}
-          onViewDetails={(doc) => setDetailsDoc(doc)}
-          onReindex={handleReindexClick}
-          onDelete={handleDeleteClick}
-          operationLoading={operationLoading}
-        />
+      <MainWorkspace
+        messages={messages}
+        isLoading={isLoading}
+        error={error}
+        onAskQuestion={handleAskQuestion}
+        onClearHistory={() => {
+          setMessages([]);
+          setActiveCitationPopover(null);
+        }}
+        onSelectPrompt={(promptText) => {
+          // Pre-fill text inside QuestionInput or submit
+          // The prompt says: "Quick prompts should pre-fill the input but never automatically submit."
+          // We will handle this inside QuestionInput by exposing a value/setMethod or pre-fill state.
+        }}
+        selectedDocName={selectedDoc}
+        operationError={operationError}
+        onDismissOperationError={() => setOperationError(null)}
+        isConnected={isConnected}
+        onCitationClick={handleCitationClick}
+        activeCitationPopoverId={activeCitationPopover ? `${activeCitationPopover.messageIndex}-${activeCitationPopover.citationId}` : null}
+      />
 
-        <MainWorkspace
-          messages={messages}
-          isLoading={isLoading}
-          error={error}
-          onAskQuestion={handleAskQuestion}
-          onClearHistory={() => setMessages([])}
-          onSelectPrompt={handleAskQuestion}
-          selectedDocName={selectedDoc}
-          operationError={operationError}
-          onDismissOperationError={() => setOperationError(null)}
-          isConnected={isConnected}
-          activeMessageIndex={activeMessageIndex}
-          selectedCitationIndex={selectedCitationIndex}
-          onSelectSource={handleSelectSource}
+      {/* Floating Citation Popover */}
+      {activeCitationPopover && (
+        <CitationPopover
+          source={activeCitationPopover.source}
+          rect={activeCitationPopover.rect}
+          onClose={() => setActiveCitationPopover(null)}
         />
-
-        <ContextualReader
-          activeSources={currentActiveSources}
-          selectedCitationIndex={selectedCitationIndex}
-          onSelectCitation={(citationIndex) => handleSelectSource(activeMessageIndex, citationIndex)}
-        />
-      </div>
+      )}
 
       <UploadModal
         isOpen={isUploadOpen}
@@ -270,8 +271,8 @@ export function App() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(4px)',
+          backgroundColor: 'rgba(15, 23, 42, 0.15)',
+          backdropFilter: 'blur(8px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -282,26 +283,26 @@ export function App() {
             width: '100%',
             maxWidth: '400px',
             backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-medium)',
-            borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-elevated)',
-            padding: '20px'
+            border: '1px solid rgba(0, 0, 0, 0.05)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-floating)',
+            padding: '24px'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '10px' }}>
-              Confirm Deletion
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '10px' }}>
+              Delete Document
             </h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '20px' }}>
-              Are you sure you want to delete <strong>{deleteConfirmDoc.name}</strong>? This action will remove all vector storage index chunks associated with this file.
+            <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '24px' }}>
+              Are you sure you want to delete <strong>{deleteConfirmDoc.name}</strong>? This action will permanently remove all associated vector indexes.
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 onClick={() => setDeleteConfirmDoc(null)}
                 style={{
-                  padding: '8px 14px',
-                  fontSize: '12px',
-                  fontWeight: 500,
+                  padding: '8px 16px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
                   color: 'var(--text-secondary)',
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'transparent'
                 }}
               >
@@ -313,12 +314,12 @@ export function App() {
                   setDeleteConfirmDoc(null);
                 }}
                 style={{
-                  padding: '8px 14px',
-                  fontSize: '12px',
-                  fontWeight: 500,
+                  padding: '8px 16px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
                   color: '#ffffff',
                   backgroundColor: 'var(--text-error)',
-                  borderRadius: 'var(--radius-sm)'
+                  borderRadius: 'var(--radius-md)'
                 }}
               >
                 Delete

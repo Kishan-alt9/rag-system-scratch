@@ -56,6 +56,25 @@ class GenerationTests(unittest.TestCase):
         self.assertEqual(result["sources"][0]["citation_id"], "S1")
         self.assertTrue(result["citation_validation"]["valid"])
 
+    def test_citation_correctness_id_source_of_truth(self):
+        # Verify that validation parses citation ids (like S2, S1) directly as the source of truth,
+        # rather than guessing them by list position
+        answer = "First fact [S2]. Second fact [S1]."
+        source_ids = ["S1", "S2"]
+        result = validate_citations(answer, source_ids)
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["cited_ids"], ["S2", "S1"])
+
+    @patch("src.retriever.retrieve")
+    def test_stale_state_prevention_on_no_answer(self, mock_retrieve):
+        # Verify that if no chunks are retrieved, the pipeline returns exactly the fallback string
+        # and has zero sources, preventing stale context leakage
+        mock_retrieve.return_value = []
+        pipeline = RAGPipeline([], object())
+        result = pipeline.ask("A question with no context")
+        self.assertEqual(result["answer"], "I couldn't find the answer in the provided document.")
+        self.assertEqual(result["sources"], [])
+
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main()

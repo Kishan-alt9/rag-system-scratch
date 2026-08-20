@@ -11,50 +11,50 @@ export const DocumentItem = ({
   onDelete,
   loadingAction
 }) => {
-  const { name, pages, chunks, status = 'indexed' } = document;
+  const { name, chunks, status = 'indexed' } = document;
   const isMutating = !!loadingAction;
 
   return (
     <div
       onClick={() => !isMutating && onSelect && onSelect(name)}
-      className={`card perspective-card ${isMutating ? '' : 'card-interactive'}`}
+      className="interactive-item"
       style={{
-        padding: '11px 13px',
-        marginBottom: '8px',
-        backgroundColor: isSelected ? 'var(--bg-accent-subtle)' : 'var(--bg-card)',
-        borderColor: isSelected ? 'var(--border-focus)' : 'var(--border-subtle)',
+        padding: '8px 10px',
+        borderRadius: 'var(--radius-sm)',
+        backgroundColor: isSelected ? 'var(--accent-bg-subtle)' : 'transparent',
+        border: isSelected ? '1px solid rgba(99, 102, 241, 0.15)' : '1px solid transparent',
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
+        gap: '10px',
         userSelect: 'none',
         opacity: isMutating ? 0.6 : 1,
         cursor: isMutating ? 'not-allowed' : 'pointer'
       }}
     >
       <div style={{
-        width: '32px',
-        height: '32px',
-        borderRadius: 'var(--radius-sm)',
-        backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'rgba(56, 189, 248, 0.08)',
-        border: '1px solid rgba(56, 189, 248, 0.2)',
+        width: '28px',
+        height: '28px',
+        borderRadius: '6px',
+        backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.12)' : '#f8fafc',
+        border: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        color: 'var(--text-accent)'
+        color: isSelected ? 'var(--accent-indigo)' : 'var(--text-secondary)'
       }}>
         {isMutating ? (
-          <Loader2 className="animate-spin" style={{ width: '16px', height: '16px' }} />
+          <Loader2 className="animate-spin" style={{ width: '14px', height: '14px' }} />
         ) : (
-          <FileText style={{ width: '16px', height: '16px' }} />
+          <FileText style={{ width: '14px', height: '14px' }} />
         )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: '13px',
-          fontWeight: 600,
-          color: 'var(--text-primary)',
+          fontSize: '12.5px',
+          fontWeight: isSelected ? 700 : 500,
+          color: isSelected ? 'var(--text-accent)' : 'var(--text-primary)',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis'
@@ -65,23 +65,20 @@ export const DocumentItem = ({
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          marginTop: '3px',
-          fontSize: '11px',
+          gap: '6px',
+          marginTop: '1.5px',
+          fontSize: '10.5px',
           color: 'var(--text-tertiary)'
         }}>
-          {pages ? (
-            <span>{pages} {pages === 1 ? 'page' : 'pages'}</span>
-          ) : chunks ? (
-            <span>{chunks} {chunks === 1 ? 'chunk' : 'chunks'}</span>
-          ) : null}
+          <span>{chunks || 0} chunks</span>
+          <span style={{ opacity: 0.5 }}>•</span>
 
           {isMutating ? (
             <span style={{
               display: 'inline-flex',
               alignItems: 'center',
               color: 'var(--text-accent)',
-              fontWeight: 500
+              fontWeight: 600
             }}>
               {loadingAction === 'deleting' ? 'Deleting...' : 'Re-indexing...'}
             </span>
@@ -90,12 +87,12 @@ export const DocumentItem = ({
               <span style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '3px',
+                gap: '2px',
                 color: 'var(--text-success)',
-                fontWeight: 500
+                fontWeight: 600
               }}>
-                <Check style={{ width: '11px', height: '11px' }} />
-                Indexed
+                <Check style={{ width: '10px', height: '10px', strokeWidth: 3 }} />
+                Ready
               </span>
             )
           )}
@@ -113,3 +110,5 @@ export const DocumentItem = ({
     </div>
   );
 };
+
+export default DocumentItem;

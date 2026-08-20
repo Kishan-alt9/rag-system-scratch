@@ -1,145 +1,136 @@
 import React from 'react';
 import { DocStack3D } from './DocStack3D';
-import { ArrowRight, FileText, AlertCircle, Sparkles, BookOpen, Layers, Compass } from 'lucide-react';
+import { AlertCircle, FileText, HelpCircle, GitCompare } from 'lucide-react';
 
-const SAMPLE_PROMPTS = [
+const QUICK_ACTIONS = [
   {
-    icon: Sparkles,
-    title: "Summarize Core Concepts",
-    desc: "Extract key definitions and architectural highlights"
+    label: "Summarize a document",
+    text: "Can you provide a comprehensive summary of my uploaded document, detailing its key sections and architectural overview?",
+    icon: FileText
   },
   {
-    icon: BookOpen,
-    title: "Query Technical Details",
-    desc: "Ask specific questions across indexed documents"
+    label: "Explain a concept",
+    text: "Explain the core concepts and underlying mechanisms discussed in the indexed papers.",
+    icon: HelpCircle
   },
   {
-    icon: Layers,
-    title: "Inspect Retrieved Evidence",
-    desc: "Verify passages and page numbers for answers"
-  },
-  {
-    icon: Compass,
-    title: "Explore Knowledge Base",
-    desc: "Discover concepts mapped across all indexed chunks"
+    label: "Compare topics",
+    text: "Compare and contrast the primary technologies and trade-offs presented across my documents.",
+    icon: GitCompare
   }
 ];
 
 export const EmptyState = ({ onSelectPrompt, apiOffline }) => {
   return (
     <div style={{
-      maxWidth: '720px',
+      maxWidth: '640px',
       margin: 'auto',
-      padding: '30px 20px',
-      textAlign: 'center'
+      padding: '40px 20px',
+      textAlign: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '24px'
     }} className="animate-fade-in">
-      {/* If API is offline */}
+      
+      {/* Offline Warning */}
       {apiOffline && (
         <div style={{
-          padding: '14px 18px',
-          backgroundColor: '#fef2f2',
-          border: '1px solid #fecaca',
+          width: '100%',
+          padding: '12px 16px',
+          backgroundColor: '#fff1f2',
+          border: '1px solid #ffe4e6',
           borderRadius: 'var(--radius-md)',
           color: 'var(--text-error)',
-          textAlign: 'center',
-          marginBottom: '24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '10px'
+          gap: '8px',
+          fontSize: '12.5px',
+          fontWeight: 500
         }}>
-          <AlertCircle style={{ width: '18px', height: '18px', flexShrink: 0 }} />
-          <div style={{ fontWeight: 600, fontSize: '13px' }}>
-            FastAPI Server Offline — Make sure backend is running at http://127.0.0.1:8000
-          </div>
+          <AlertCircle style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+          <span>FastAPI server offline. Please make sure the backend is running.</span>
         </div>
       )}
 
-      {/* 3D Visual Document Stack */}
+      {/* 3D Masterpiece illustration */}
       <DocStack3D />
 
-      {/* Oversized Modern Typography */}
-      <h2 style={{
-        fontSize: '32px',
-        fontWeight: 800,
-        color: 'var(--text-primary)',
-        letterSpacing: '-0.03em',
-        lineHeight: 1.2,
-        marginBottom: '12px'
-      }}>
-        Research with <span style={{
-          background: 'var(--accent-gradient)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>Grounded Intelligence</span>
-      </h2>
+      {/* Editorial Empty State Typography */}
+      <div>
+        <h2 style={{
+          fontSize: '24px',
+          fontWeight: 800,
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.02em',
+          marginBottom: '8px'
+        }}>
+          Research your documents
+        </h2>
+        <p style={{
+          fontSize: '14px',
+          color: 'var(--text-secondary)',
+          fontWeight: 400,
+          maxWidth: '400px',
+          margin: '0 auto',
+          lineHeight: '1.5'
+        }}>
+          Ask questions across your knowledge base.
+        </p>
+      </div>
 
-      {/* Subtext */}
-      <p style={{
-        fontSize: '15px',
-        color: 'var(--text-secondary)',
-        maxWidth: '520px',
-        margin: '0 auto 36px auto',
-        lineHeight: '1.6',
-        fontWeight: 400
-      }}>
-        Query your indexed documents to extract verified answers, inspect source evidence, and trace exact page citations.
-      </p>
-
-      {/* Suggestion Prompts Grid */}
+      {/* Quick Action Pill Buttons */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '14px',
-        textAlign: 'left'
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: '10px',
+        marginTop: '12px'
       }}>
-        {SAMPLE_PROMPTS.map((prompt, idx) => {
-          const IconComp = prompt.icon;
+        {QUICK_ACTIONS.map((action, idx) => {
+          const Icon = action.icon;
           return (
-            <div
+            <button
               key={idx}
-              onClick={() => onSelectPrompt && onSelectPrompt(prompt.title)}
-              className="card card-interactive card-3d"
+              onClick={() => onSelectPrompt && onSelectPrompt(action.text)}
               style={{
-                padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '14px',
-                borderRadius: 'var(--radius-lg)',
-                backgroundColor: '#ffffff',
+                gap: '8px',
+                padding: '10px 16px',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 border: '1px solid var(--border-subtle)',
-                boxShadow: 'var(--shadow-card)'
+                boxShadow: 'var(--shadow-sm)',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-indigo)';
+                e.currentTarget.style.color = 'var(--text-accent)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.08)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '10px',
-                  backgroundColor: idx % 2 === 0 ? 'var(--bg-accent-subtle)' : 'var(--bg-purple-subtle)',
-                  color: idx % 2 === 0 ? 'var(--text-accent)' : 'var(--text-purple)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <IconComp style={{ width: '18px', height: '18px' }} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
-                    {prompt.title}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                    {prompt.desc}
-                  </div>
-                </div>
-              </div>
-              <ArrowRight style={{ width: '16px', height: '16px', color: 'var(--text-tertiary)', flexShrink: 0 }} />
-            </div>
+              <Icon style={{ width: '14px', height: '14px' }} />
+              <span>{action.label}</span>
+            </button>
           );
         })}
       </div>
     </div>
   );
 };
+
+export default EmptyState;

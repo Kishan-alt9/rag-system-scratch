@@ -15,6 +15,14 @@
             "page_count": 45,
             "chunk_count": 158,
             "status": "indexed"
+        },
+        {
+            "id": "9c4548a7e05393e23d226733068d1e060300cf5316ad9644bb167a4abffa49d9",
+            "filename": "SE- Module 1.pdf",
+            "sha256": "9c4548a7e05393e23d226733068d1e060300cf5316ad9644bb167a4abffa49d9",
+            "page_count": 39,
+            "chunk_count": 153,
+            "status": "indexed"
         }
     ]
 }

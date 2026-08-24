@@ -25,7 +25,7 @@ def validate_citations(answer, source_ids):
     }
 
 
-def generate_answer(query, results, conversation_history=None):
+def generate_answer(original_question, results, conversation_history=None, resolved_question=None):
     print("Generating answer...")
 
     context_blocks = []
@@ -52,6 +52,9 @@ def generate_answer(query, results, conversation_history=None):
 You are a helpful AI assistant.
 
 Answer ONLY using the context below.
+Treat the resolved question as authoritative. Answer specifically about the
+subject named in it; do not broaden an item-specific question to its parent
+topic and do not reinterpret its reference from the context.
 For every factual claim, include one or more citation markers such as [S1].
 Use only citation markers that exist in the provided context. Do not invent or
 rename citation markers.
@@ -62,8 +65,11 @@ If the answer is not present in the context, reply:
 {history_section}Context:
 {context}
 
-Question:
-{query}
+Original question:
+{original_question}
+
+Resolved question (authoritative for interpreting references):
+{resolved_question or original_question}
 """
 
     response = chat(

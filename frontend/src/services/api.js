@@ -68,7 +68,7 @@ export const api = {
    * @param {string} question 
    * @returns {Promise<{answer: string, sources: Array<{document: string, page: number}>}>}
    */
-  async askQuestion(question) {
+  async askQuestion(question, conversationId = null, documentName = null) {
     if (!question || !question.trim()) {
       throw new ApiError('Question cannot be empty', 400);
     }
@@ -79,7 +79,11 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question: question.trim() }),
+        body: JSON.stringify({
+          question: question.trim(),
+          ...(conversationId ? { conversation_id: conversationId } : {}),
+          ...(documentName ? { document_name: documentName } : {})
+        }),
       });
 
       if (!response.ok) {

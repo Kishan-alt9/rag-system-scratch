@@ -37,6 +37,7 @@ app.add_middleware(
 class QuestionRequest(BaseModel):
     question: str
     conversation_id: str | None = None
+    document_name: str | None = None
 
 
 def reload_pipeline():
@@ -127,7 +128,11 @@ def ask_question(request: QuestionRequest):
         except Exception:
             raise HTTPException(status_code=500, detail="RAG Pipeline is not initialized or index missing.")
 
-    result = app.state.pipeline.ask(request.question, request.conversation_id)
+    result = app.state.pipeline.ask(
+        request.question,
+        request.conversation_id,
+        request.document_name
+    )
     return result
 
 

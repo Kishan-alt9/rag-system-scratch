@@ -14,6 +14,7 @@ export function App() {
   const [selectedDoc, setSelectedDoc] = useState(null);
   
   const [messages, setMessages] = useState([]);
+  const [conversationId, setConversationId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -84,7 +85,8 @@ export function App() {
     setIsLoading(true);
 
     try {
-      const response = await api.askQuestion(questionText);
+      const response = await api.askQuestion(questionText, conversationId, selectedDoc);
+      setConversationId(response.conversation_id || conversationId);
       
       // Determine if the answer indicates failure/missing answer
       const answerText = response.answer || "";
@@ -218,6 +220,7 @@ export function App() {
         onAskQuestion={handleAskQuestion}
         onClearHistory={() => {
           setMessages([]);
+          setConversationId(null);
           setActiveCitationPopover(null);
         }}
         onSelectPrompt={(promptText) => {

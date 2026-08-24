@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from src.pipeline import MAX_CONVERSATION_TURNS, RAGPipeline
+from src.pipeline import MAX_CONVERSATION_TURNS, RAGPipeline, _extract_points
 
 
 class ConversationTests(unittest.TestCase):
@@ -36,9 +36,53 @@ class ConversationTests(unittest.TestCase):
         self.pipeline.ask("What are its advantages?", first["conversation_id"])
 
         second_query = mock_retrieve.call_args_list[1].args[0]
-        self.assertIn("What is the topic?", second_query)
-        self.assertIn("What are its advantages?", second_query)
+        self.assertEqual(second_query, "What are What is the topic advantages?")
+        self.assertNotIn("Conversation context:", second_query)
         self.assertEqual(mock_generate.call_args_list[1].args[2][0]["question"], "What is the topic?")
+
+    @patch("src.retriever.retrieve")
+    @patch("src.generator.generate_answer")
+    def test_protocol_ordinals_resolve_from_previous_answer(self, mock_generate, mock_retrieve):
+        mock_retrieve.return_value = self.results
+        mock_generate.side_effect = [
+            "1. MQTT [S1]\n2. CoAP [S1]",
+            "MQTT is a protocol [S1].",
+            "CoAP is a protocol [S1].",
+        ]
+
+        first = self.pipeline.ask(
+            "What are the different protocols in Module 1 Notes?",
+            "protocols"
+        )
+        second = self.pipeline.ask("Can you explain the first one?", first["conversation_id"])
+        third = self.pipeline.ask("What about the second one?", second["conversation_id"])
+
+        self.assertEqual(first["conversation_id"], second["conversation_id"])
+        self.assertEqual(second["conversation_id"], third["conversation_id"])
+        self.assertEqual(mock_retrieve.call_args_list[1].args[0], "Can you explain MQTT?")
+        self.assertEqual(mock_retrieve.call_args_list[2].args[0], "What about CoAP?")
+        self.assertEqual(mock_generate.call_args_list[1].kwargs["resolved_question"], "Can you explain MQTT?")
+        self.assertEqual(mock_generate.call_args_list[2].kwargs["resolved_question"], "What about CoAP?")
+
+    @patch("src.retriever.retrieve")
+    @patch("src.generator.generate_answer")
+    def test_first_advantage_resolves_from_previous_answer(self, mock_generate, mock_retrieve):
+        mock_retrieve.return_value = self.results
+        mock_generate.side_effect = [
+            "1. Lower cost [S1]\n2. Better reliability [S1]",
+            "Lower cost is an advantage [S1].",
+        ]
+
+        first = self.pipeline.ask("What are the main advantages?", "advantages")
+        self.pipeline.ask(
+            "Can you explain the first one in more detail?",
+            first["conversation_id"]
+        )
+
+        self.assertEqual(
+            mock_retrieve.call_args_list[1].args[0],
+            "Can you explain Lower cost in more detail?"
+        )
 
     @patch("src.retriever.retrieve")
     @patch("src.generator.generate_answer")
@@ -91,6 +135,63 @@ class ConversationTests(unittest.TestCase):
         self.assertTrue(self.pipeline.reset_conversation("resettable"))
         self.assertFalse(self.pipeline.reset_conversation("resettable"))
         self.assertNotIn("resettable", self.pipeline._conversations)
+
+    def test_extracts_explicit_protocol_list(self):
+        self.assertEqual(
+            _extract_points("The protocols include MQTT, CoAP, HTTP, AMQP, and XMPP."),
+            ["MQTT", "CoAP", "HTTP", "AMQP", "XMPP"]
+        )
+
+    def test_extracts_explicit_advantages_list(self):
+        self.assertEqual(
+            _extract_points("The advantages include speed, clarity, and productivity."),
+            ["speed", "clarity", "productivity"]
+        )
+
+    def test_extracts_explicit_types_list(self):
+        self.assertEqual(
+            _extract_points("The types are waterfall, spiral, and agile."),
+            ["waterfall", "spiral", "agile"]
+        )
+
+    def test_extracts_explicit_stages_list(self):
+        self.assertEqual(
+            _extract_points("The stages mentioned are planning, design, implementation, and testing."),
+            ["planning", "design", "implementation", "testing"]
+        )
+
+    def test_extracts_numbered_list_before_explicit_list(self):
+        self.assertEqual(_extract_points("1. MQTT\n2. CoAP"), ["MQTT", "CoAP"])
+
+    def test_extracts_bulleted_list_before_explicit_list(self):
+        self.assertEqual(_extract_points("- MQTT\n- CoAP"), ["MQTT", "CoAP"])
+
+    def test_rejects_ordinary_comma_separated_prose(self):
+        self.assertEqual(_extract_points("The system is fast, reliable, and scalable."), [])
+        self.assertEqual(_extract_points("This system uses a broker, clients, and topics for messaging."), [])
+        self.assertEqual(_extract_points("The document discusses speed, reliability, and performance."), [])
+
+    def test_discards_trailing_and_others(self):
+        self.assertEqual(
+            _extract_points(
+                "The different protocols mentioned in Module 1 Notes are MQTT, CoAP, HTTP, AMQP, XMPP, and others related to IoT communication [S1]."
+            ),
+            ["MQTT", "CoAP", "HTTP", "AMQP", "XMPP"]
+        )
+
+    def test_strips_citation_markers(self):
+        self.assertEqual(
+            _extract_points("The types are waterfall [S1], spiral [S2], and agile [S3]."),
+            ["waterfall", "spiral", "agile"]
+        )
+
+    def test_rejects_nested_explanatory_such_as_phrase(self):
+        self.assertEqual(
+            _extract_points(
+                "Messages are categorized into different types, such as CONNECT, CONNACK, and PUBLISH."
+            ),
+            []
+        )
 
 
 if __name__ == "__main__":

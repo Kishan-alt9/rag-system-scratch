@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import numpy as np
 
@@ -41,12 +41,8 @@ class ChunkIdentityTests(unittest.TestCase):
         self.assertEqual([chunk["embedding"] for chunk in persisted_chunks], [[1.0], [2.0], [3.0]])
 
     @patch("src.retriever.embed")
-    @patch("src.retriever._get_reranker")
-    def test_retrieval_returns_expected_chunk_metadata(self, mock_get_reranker, mock_embed):
+    def test_retrieval_returns_expected_chunk_metadata(self, mock_embed):
         mock_embed.return_value = {"embeddings": [[0.1, 0.2]]}
-        reranker = Mock()
-        reranker.predict.return_value = np.array([0.1, 0.9], dtype="float32")
-        mock_get_reranker.return_value = reranker
         chunks = [
             {
                 "document": "guide.pdf",
@@ -64,13 +60,13 @@ class ChunkIdentityTests(unittest.TestCase):
             },
         ]
 
-        results = retrieve("question", FakeIndex(), chunks, top_k=1, candidate_k=2)
+        results = retrieve("question", FakeIndex(), chunks, top_k=1)
 
         self.assertEqual(results[0]["document"], "guide.pdf")
         self.assertEqual(results[0]["page"], 2)
-        self.assertEqual(results[0]["chunk_id"], "guide.pdf:2:1")
-        self.assertEqual(results[0]["text"], "second")
-        self.assertAlmostEqual(results[0]["distance"], 0.4)
+        self.assertEqual(results[0]["chunk_id"], "guide.pdf:2:0")
+        self.assertEqual(results[0]["text"], "first")
+        self.assertAlmostEqual(results[0]["distance"], 0.2)
 
 
 if __name__ == "__main__":

@@ -45,8 +45,12 @@ def reload_pipeline():
         chunks = load_chunks()
         index = load_index()
         app.state.pipeline = RAGPipeline(chunks, index)
-    except Exception:
+        app.state.pipeline_error = None
+        return True
+    except Exception as error:
         app.state.pipeline = None
+        app.state.pipeline_error = error
+        return False
 
 
 @app.on_event("startup")
@@ -123,10 +127,14 @@ def get_documents():
 @app.post("/ask")
 def ask_question(request: QuestionRequest):
     if not hasattr(app.state, "pipeline") or app.state.pipeline is None:
-        try:
-            reload_pipeline()
-        except Exception:
-            raise HTTPException(status_code=500, detail="RAG Pipeline is not initialized or index missing.")
+        reload_pipeline()
+
+    if app.state.pipeline is None:
+        error = getattr(app.state, "pipeline_error", None)
+        detail = "RAG pipeline/index is unavailable."
+        if error:
+            detail = f"{detail} {error}"
+        raise HTTPException(status_code=500, detail=detail)
 
     result = app.state.pipeline.ask(
         request.question,

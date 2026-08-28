@@ -13,6 +13,7 @@ from psycopg2.extensions import connection as Connection
 
 logger = logging.getLogger(__name__)
 _IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+psycopg2.extras.register_uuid()
 
 
 class Database:
